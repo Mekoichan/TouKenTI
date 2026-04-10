@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TouKenTi</title>
+<style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+        font-family:"Noto Serif SC","Microsoft YaHei",serif;
+        background:#f6f2eb;
+        color:#4a4037;
+        line-height:1.8;
+        padding:40px 20px;
+    }
+    .container{
+        max-width:900px;
+        margin:0 auto;
+    }
+    .card{
+        background:rgba(255,255,255,0.92);
+        border:1px solid #d9cfc1;
+        border-radius:24px;
+        padding:36px;
+        box-shadow:0 8px 30px rgba(0,0,0,0.06);
+        backdrop-filter:blur(8px);
+    }
+    h1{
+        text-align:center;
+        font-size:2.4rem;
+        letter-spacing:0.08em;
+        color:#6a4b3a;
+        margin-bottom:8px;
+    }
+    .subtitle{
+        text-align:center;
+        color:#8a7b6b;
+        margin-bottom:32px;
+    }
+    .question{
+        margin-bottom:30px;
+        padding-bottom:22px;
+        border-bottom:1px solid #eee2d6;
+    }
+    .question h3{
+        font-size:1.05rem;
+        margin-bottom:14px;
+        color:#5a463a;
+    }
+    .option{
+        display:block;
+        margin:10px 0;
+        padding:14px 16px;
+        border:1px solid #d9cfc1;
+        border-radius:14px;
+        cursor:pointer;
+        transition:0.2s;
+        background:#fcfaf7;
+    }
+    .option:hover{
+        background:#efe6da;
+        border-color:#bba58f;
+    }
+    .option input{
+        margin-right:10px;
+    }
+    button{
+        display:block;
+        width:220px;
+        margin:30px auto 0;
+        padding:14px;
+        border:none;
+        border-radius:999px;
+        background:#7b5c4a;
+        color:white;
+        font-size:1rem;
+        cursor:pointer;
+        transition:0.2s;
+    }
+    button:hover{
+        background:#614739;
+        transform:translateY(-2px);
+    }
+    #result{
+        display:none;
+        margin-top:36px;
+        padding:30px;
+        border-radius:22px;
+        background:#f8f3ee;
+        border:1px solid #d9cfc1;
+    }
+    #result h2{
+        color:#6a4b3a;
+        margin-bottom:10px;
+    }
+    .type{
+        font-size:1.3rem;
+        margin-bottom:12px;
+        color:#8b5e3c;
+    }
+    .tag{
+        display:inline-block;
+        margin-right:8px;
+        margin-bottom:8px;
+        padding:6px 12px;
+        border-radius:999px;
+        background:#e9ddd0;
+        color:#6b5647;
+        font-size:0.9rem;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>TouKenTi</h1>
+        <p class="subtitle">以刀剑男士的性格与战斗方式为基础的 16 型测试</p>
+
+        <form id="quizForm"></form>
+
+        <button onclick="calculateResult()">查看结果</button>
+
+        <div id="result">
+            <h2>你的刀剑类型是</h2>
+            <div class="type" id="resultName"></div>
+            <div id="resultTags"></div>
+            <p id="resultDesc"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {q:"1. 初次进入战场时，你更倾向于？", options:[
+        ["率先冲到最前方", "A+"],
+        ["观察局势后再行动", "A-"],
+        ["跟随可靠的人", "A-"],
+        ["暗中寻找最有效的路线", "A-"]]},
+
+    {q:"2. 如果被主君委托任务，你会？", options:[
+        ["立刻答应，不惜一切完成", "B+"],
+        ["先确认自己的做法是否正确", "B+"],
+        ["按照自己的方式处理", "B-"],
+        ["不喜欢被束缚，但会完成", "B-"]]},
+
+    {q:"3. 在本丸聚会里，你通常是？", options:[
+        ["主动活跃气氛的人", "C+"],
+        ["会照顾大家的人", "C+"],
+        ["待在角落安静看着", "C-"],
+        ["只和熟悉的人说话", "C-"]]},
+
+    {q:"4. 遇到意料之外的情况时，你会？", options:[
+        ["觉得很有趣，立刻尝试", "D-"],
+        ["趁机搞点惊喜", "D-"],
+        ["先稳住局面再说", "D+"],
+        ["谨慎确认后才行动", "D+"]]},
+
+    {q:"5. 你最喜欢的战斗方式是？", options:[
+        ["正面压制，一击解决", "A+"],
+        ["支援队友、寻找机会", "A-"],
+        ["扰乱对方节奏", "D-"],
+        ["耐心等待最佳时机", "D+"]]},
+
+    {q:"6. 被误解时，你更可能？", options:[
+        ["立刻解释，希望被理解", "C+"],
+        ["嘴上不说，但会很在意", "C-"],
+        ["无所谓，反正我知道自己", "B-"],
+        ["会努力证明自己没有错", "B+"]]},
+
+    {q:"7. 你最无法接受的是？", options:[
+        ["背叛与不被需要", "B+"],
+        ["被人擅自安排", "B-"],
+        ["无聊、没有变化", "D-"],
+        ["计划被彻底打乱", "D+"]]},
+
+    {q:"8. 若你是一把刀，你希望自己是？", options:[
+        ["锋利耀眼、引人注目", "C+"],
+        ["沉默却可靠", "C-"],
+        ["能够守护重要之人", "B+"],
+        ["自由自在，不被定义", "B-"]]},
+
+    {q:"9. 面对陌生人，你会？", options:[
+        ["主动搭话", "C+"],
+        ["礼貌但保持距离", "C-"],
+        ["观察对方后再决定", "A-"],
+        ["先试探一下对方反应", "D-"]]},
+
+    {q:"10. 战斗中队友陷入危险时，你会？", options:[
+        ["立刻冲上去救人", "A+"],
+        ["冷静支援，寻找突破口", "A-"],
+        ["优先保证整体战局", "D+"],
+        ["赌一把，创造逆转", "D-"]]},
+
+    {q:"11. 你更像哪一种天气？", options:[
+        ["晴天", "C+"],
+        ["雨夜", "C-"],
+        ["骤雨雷鸣", "D-"],
+        ["静静落雪", "D+"]]},
+
+    {q:"12. 面对重要的人，你会？", options:[
+        ["毫不掩饰地表达感情", "C+"],
+        ["用行动代替语言", "C-"],
+        ["绝对忠诚地守在身边", "B+"],
+        ["保持距离，但一直关注", "B-"]]},
+
+    {q:"13. 你更擅长？", options:[
+        ["鼓舞别人", "C+"],
+        ["分析局势", "A-"],
+        ["执行命令", "B+"],
+        ["打破常规", "D-"]]},
+
+    {q:"14. 别人对你的第一印象通常是？", options:[
+        ["可靠又认真", "B+"],
+        ["有点冷淡", "C-"],
+        ["很有魅力", "C+"],
+        ["让人猜不透", "D-"]]},
+
+    {q:"15. 如果必须单独行动，你会？", options:[
+        ["完全没问题", "B-"],
+        ["虽然寂寞，但还是会做", "C-"],
+        ["希望能有人陪着", "C+"],
+        ["先制定好详细计划", "D+"]]},
+
+    {q:"16. 你更偏爱的刀种是？", options:[
+        ["太刀、薙刀那样正面压制", "A+"],
+        ["短刀、胁差那样灵活支援", "A-"],
+        ["打刀那样兼顾性格与技巧", "B+"],
+        ["喜欢难以预测的战法", "D-"]]},
+
+    {q:"17. 如果本丸出现矛盾，你会？", options:[
+        ["主动调停", "C+"],
+        ["不参与，但会观察", "C-"],
+        ["遵从规则处理", "B+"],
+        ["先看看会不会变得更有趣", "D-"]]},
+
+    {q:"18. 对你来说，力量意味着？", options:[
+        ["保护重要之人", "B+"],
+        ["证明自己的价值", "B-"],
+        ["突破一切阻碍", "A+"],
+        ["掌控局势", "A-"]]},
+
+    {q:"19. 你希望别人如何记住你？", options:[
+        ["温柔又耀眼", "C+"],
+        ["沉默却不可替代", "C-"],
+        ["永远忠诚", "B+"],
+        ["充满惊喜，永远不会无聊", "D-"]]},
+
+    {q:"20. 最后，如果你是一振刀，你会选择？", options:[
+        ["陪在主君身边直到最后", "B+"],
+        ["独自走上自己的道路", "B-"],
+        ["与同伴一起迎接新的故事", "C+"],
+        ["去制造一场前所未有的冒险", "D-"]]}
+];
+
+const results = {
+    "++++":"压切长谷部（打刀）|忠诚、外向、谨慎、正面突破|你会为了重要的人毫不犹豫地挥刀向前。像打刀一样兼具机动与执行力，你最大的特质是『被需要』。",
+    "+-++":"烛台切光忠（太刀）|可靠、体贴、稳定、华丽|你擅长照顾别人，也总希望自己能够保持帅气与从容。像太刀一样，强大而令人安心。",
+    "--++":"药研藤四郎（短刀）|冷静、理性、忠诚、支援型|你不会轻易把情绪表现出来，却总能在关键时刻看清局势。短刀的灵活与沉着非常适合你。",
+    "+--+":"大俱利伽罗（打刀）|独行、沉默、强势、稳定|你不喜欢依赖别人，也不愿轻易袒露自己，但你比任何人都可靠。",
+    "+---":"鹤丸国永（太刀）|行动派、自由、外向、意外性|你最讨厌一成不变，总想给世界来一点惊喜。像鹤丸一样，永远在创造变化。",
+    "---+":"山姥切国广（打刀）|内敛、认真、谨慎、自我怀疑|你总觉得自己还不够好，却会默默做到最好。你的温柔藏得很深。",
+    "--+-":"笑面青江（胁差）|敏锐、神秘、观察者、游刃有余|你总能看穿别人，却不一定会说出口。你擅长在暗处掌握局势。",
+    "-+++":"山姥切长义（打刀）|自信、理智、讲究秩序、锋利|你对自己要求极高，也希望别人认可你的实力。像名刀一样骄傲而耀眼。",
+    "++-+":"三日月宗近（太刀）|从容、温和、稳重、领袖型|你很少慌乱，总能在关键时刻让人安心。你拥有像古老太刀般厚重而优雅的力量。",
+    "++--":"岩融（薙刀）|豪爽、热烈、行动派、冲锋型|你喜欢正面迎战，也喜欢保护身边的人。你的存在感总是非常强。",
+    "-+--":"今剑（短刀）|自由、活泼、灵巧、冒险|你像短刀一样轻盈，总能找到别人想不到的路。",
+    "-++-":"和泉守兼定（打刀）|热血、自尊、讲义气、爱逞强|你喜欢成为最耀眼的人，也希望自己足够强大，能够保护重要之人。",
+    "+--":"加州清光（打刀）|渴望被爱、敏感、会撒娇、外热内冷|你很在意自己在别人心里的位置，也会努力让自己更加闪耀。",
+    "-+-+":"一期一振（太刀）|温柔、克制、守护者、稳重|你习惯照顾别人，总是把重要的人放在第一位。",
+    "+-+-":"蜻蛉切（枪）|正直、忠诚、坚定、强大|你会笔直地前进，不轻易动摇。像长枪一样，一旦决定就绝不回头。",
+    "----":"小狐丸（太刀）|自由、疏离、神秘、温柔|你看似离人很远，其实内心比谁都柔软，只是不轻易被看见。"
+};
+
+const form = document.getElementById('quizForm');
+questions.forEach((item,index)=>{
+    const div=document.createElement('div');
+    div.className='question';
+    div.innerHTML=`<h3>${item.q}</h3>`+
+        item.options.map((op,i)=>`<label class="option"><input type="radio" name="q${index}" value="${op[1]}" required>${op[0]}</label>`).join('');
+    form.appendChild(div);
+});
+
+function calculateResult(){
+    const formData=new FormData(document.getElementById('quizForm'));
+    if(formData.entries().next().done){
+        alert('请先完成所有题目。');
+        return;
+    }
+
+    let score={A:0,B:0,C:0,D:0};
+
+    for(let value of formData.values()){
+        const dim=value[0];
+        const sign=value[1];
+        score[dim]+= sign==='+' ? 1 : -1;
+    }
+
+    const code = [score.A>=0?'+':'-', score.B>=0?'+':'-', score.C>=0?'+':'-', score.D>=0?'+':'-'].join('');
+
+    const fallback = {
+        "+--":"加州清光（打刀）|可爱、敏感、执着、希望被珍惜|你很在意自己是否被重视。"
+    };
+
+    const data = (results[code] || fallback[code] || results['++++']).split('|');
+
+    document.getElementById('resultName').textContent=data[0];
+    document.getElementById('resultTags').innerHTML=data[1].split('、').map(t=>`<span class="tag">${t}</span>`).join('');
+    document.getElementById('resultDesc').textContent=data[2];
+    document.getElementById('result').style.display='block';
+    document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
